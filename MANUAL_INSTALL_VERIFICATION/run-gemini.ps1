@@ -82,8 +82,6 @@ Start-Transcript -Path $TranscriptPath -Force
 # 3. Launch Gemini with the priming prompt
 $PrimingPrompt = "Read 'D:\\gemini_context\\context.json', then immediately execute the steps listed in the 'initialization_sequence' array within that file, in order and without deviation. Then, state the most recent codeword and its philosophy if present, and confirm the next task we had agreed upon. I am ready for your instructions."
 
-$env:Path = "D:\n8n-local-agent\venv\Scripts;" + $env:Path
-
 # --- Start Gemini CLI ---
 Write-Host "Launching Gemini..."
 gemini --prompt-interactive $PrimingPrompt
