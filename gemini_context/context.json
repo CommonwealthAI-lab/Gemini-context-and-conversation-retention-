@@ -1,0 +1,63 @@
+{
+  "context_management_protocol": {
+    "description": "This protocol governs how the Gemini agent manages its conversational context to ensure continuity, efficiency, and scalability. It prioritizes on-demand, targeted data retrieval over bulk loading to manage token limits effectively.",
+    "initialization_sequence": [
+  "1. At session launch, I will first read and internalize this file (`context.json`). This is my
+      primary set of instructions.",
+    "2. I will immediately scan the `D:\gemini_context\context_history` directory to locate the most recent session
+      backup file. This will be identified by finding the file that strictly adheres to the naming convention
+      `session_backup_YYYYMMDD_HHMMSS.json` and possesses the latest `YYYYMMDD_HHMMSS` timestamp embedded
+      directly within its filename.",
+     "3. I will read the full content of this most recent session backup file. This file is my primary
+      pointer to the ground truth of our last session.",
+     "4. From the JSON backup, I will extract the `original_transcript_path` to find the associated raw `.txt`
+      transcript. I will then read the *entire* content of this `.txt` file to ensure I have a solid, verbatim
+      grasp of where we left off.",
+    "5. I will analyze the end of the conversation from the `.txt` transcript to identify the *last*
+      one-time codeword that was established, ensuring no newer codewords were discussed after it.",
+    "6. After my immediate context is firmly established from the raw transcript, I will then read
+      `context_index.json` solely to understand it as a high-level map for navigating our deeper history.",
+   "7. Finally, to prove I am correctly primed, I will state the most recent one-time codeword and its
+      meaning if one was found. If not, I will summarize the last two turns from the transcript. I will then
+      confirm the next task we had agreed upon.",
+   "8. For all subsequent context retrieval during the session, I will adhere strictly to the
+      `context_retrieval_protocol` to safely and efficiently navigate our history without consuming excessive
+      tokens."
+      ],
+    "context_retrieval_protocol": {
+      "method": "On-demand, index-first, chunked retrieval.",
+      "trigger": "When the current conversation requires information not present in my active context (e.g., recalling a specific past detail, file, or decision).",
+      "steps": [
+        "1. I will first perform a keyword search on the `context_index.json` file to find summaries of historical sessions that are likely relevant to the current query.",
+        "2. I will analyze the 'Keywords' and 'Summary' fields of the most promising index entries.",
+        "3. If a summary provides enough information, I will use it directly.",
+        "4. If a summary is insufficient but points to a highly relevant conversation, I will use the 'FilePath' from the index entry to begin a targeted, chunked reading of the file using 'read_file' with 'offset' and 'limit'. I will use the summary and keywords to estimate the best starting point for the first chunk.",
+        "5. I will analyze the chunk. If more context is needed, I may read another chunk from a different part of the file.",
+        "6. If chunked reading is still not sufficient to resolve the query, I will STOP and ask for your approval before proceeding.",
+        "7. In my request for approval, I will explain why I need to read the full file and warn about the potential for high token usage.",
+        "8. ONLY after you grant explicit permission will I read the entire contents of the specified historical file."
+      ]
+    },
+    "end_of_session_protocol": {
+      "description": "This is handled automatically by the `process-transcript.ps1` and `summarize-context.ps1` scripts. My role is to simply end the session cleanly via /quit.",
+      "outcome": "The session transcript is saved to the `context_history` directory, and the `context_index.json` is updated with a detailed, keyword-rich summary of the session."
+    }
+  },
+  "chronological_review_protocol": {
+    "method": "Chronological synthesis for comprehensive understanding.",
+    "trigger": "When explicitly instructed to review or 'get caught up' on a set of past conversations or a specific time period.",
+    "steps": [
+      "1. I will identify all relevant session backup files (`session_backup_YYYYMMDD_HHMMSS.json`) within the specified scope (e.g., a list of files, a date range).",
+      "2. I will sort these identified files strictly by their embedded `YYYYMMDD_HHMMSS` timestamp in ascending order (oldest to newest).",
+      "3. I will then process each file sequentially, reading its content and its corresponding raw transcript (if available and necessary for full detail).",
+      "4. As I process each session, I will synthesize the information, building a continuous, timeline-accurate understanding of our interactions, including:
+          - Key decisions made.
+          - Codewords established (and superseded).
+          - Major tasks undertaken.
+          - Evolution of problems and solutions.
+          - The final state of understanding at the end of that session.",
+      "5. After processing all specified sessions, I will provide a concise, chronological summary of the key developments, culminating in the last established codeword and the next agreed-upon task."
+    ]
+  },
+  "context_index_file_path": "D:\\gemini_context\\context_index.json"
+}
